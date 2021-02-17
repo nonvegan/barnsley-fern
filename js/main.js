@@ -1,32 +1,45 @@
-import { mapValue, restrain, getRandomInt, getMs } from "./functions.js";
-import Vector from "./classes.js";
-import { barnsley } from "./coefficients.js";
+import { mapValue, restrain, getRandomInt, getMs } from "./helpers.js";
+import Vector from "./Vector.js";
+import coefficients from "./coefficients.js";
 
 /** @type {CanvasRenderingContext2D} */
 const ctx = document.getElementById("canvas").getContext("2d");
-const divRanges = document.getElementById("optionsDiv");
-const button = document.createElement("button");
-const range = document.createElement("input");
+const optionsDiv = document.getElementById("optionsDiv");
 const rangeLabel = document.createElement("label");
+const range = document.createElement("input");
+const button = document.createElement("button");
+const listLabel = document.createElement("label");
+const dropDownList = document.createElement("select");
 const width = window.screen.height / 1.8;
 const height = window.screen.height / 1.8;
 
 const point = new Vector(0, 0);
+let coefficientsTable = coefficients[0];
 let repsFrame = 250;
-
-const minX = -2.182;
-const maxX = 2.6558;
-const minY = 0;
-const maxY = 9.9983;
 
 function setup() {
   canvas.width = width;
   canvas.height = height;
-  ctx.fillStyle = "rgb(0, 255, 0,0.25)";
-  divRanges.appendChild(rangeLabel);
+  ctx.fillStyle = "rgb(249, 38, 114,0.5)";
   rangeLabel.textContent = "Rep/f";
-  divRanges.appendChild(range);
-  divRanges.appendChild(button);
+  listLabel.textContent = "Ferns";
+  optionsDiv.appendChild(rangeLabel);
+  optionsDiv.appendChild(range);
+  optionsDiv.appendChild(button);
+  for (const coefficient of coefficients) {
+    const newItem = document.createElement("option");
+    newItem.setAttribute("value", coefficient.index);
+    newItem.textContent = coefficient.name;
+    newItem.className="lol"
+    dropDownList.appendChild(newItem);
+  }
+  dropDownList.addEventListener("change", (evt) => {
+    coefficientsTable = coefficients[evt.target.value];
+    clear();
+  });
+ // dropDownList.className="custom-select";
+  optionsDiv.appendChild(listLabel);
+  optionsDiv.appendChild(dropDownList);
   range.setAttribute("type", "range");
   range.setAttribute("min", "1");
   range.setAttribute("max", "1000");
@@ -40,15 +53,27 @@ function setup() {
 
 function draw() {
   ctx.fillRect(
-    mapValue(point.x, minX, maxX, 0, width),
-    mapValue(point.y, maxY, minY, 0, height),
+    mapValue(
+      point.x,
+      coefficientsTable.range.xRange[0],
+      coefficientsTable.range.xRange[1],
+      0,
+      width
+    ),
+    mapValue(
+      point.y,
+      coefficientsTable.range.yRange[1],
+      coefficientsTable.range.yRange[0],
+      0,
+      height
+    ),
     1,
     1
   );
 }
 
 function update() {
-  point.assign(fractal(point, barnsley));
+  point.assign(fractal(point, coefficientsTable));
 
   function fractal(vector, coefficient) {
     const p = Math.random();
