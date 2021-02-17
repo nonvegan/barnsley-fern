@@ -1,11 +1,16 @@
+import { mapValue, restrain, getRandomInt, getMs } from "./functions.js";
+import Vector from "./classes.js";
+import { barnsley } from "./coefficients.js";
+
 /** @type {CanvasRenderingContext2D} */
 const ctx = document.getElementById("canvas").getContext("2d");
-const divRanges = document.getElementById("div");
+const divRanges = document.getElementById("optionsDiv");
 const button = document.createElement("button");
 const range = document.createElement("input");
 const rangeLabel = document.createElement("label");
 const width = window.screen.height / 1.8;
 const height = window.screen.height / 1.8;
+
 const point = new Vector(0, 0);
 let repsFrame = 250;
 
@@ -17,7 +22,7 @@ const maxY = 9.9983;
 function setup() {
   canvas.width = width;
   canvas.height = height;
-  ctx.fillStyle = "green";
+  ctx.fillStyle = "rgb(0, 255, 0,0.25)";
   divRanges.appendChild(rangeLabel);
   rangeLabel.textContent = "Rep/f";
   divRanges.appendChild(range);
@@ -27,7 +32,7 @@ function setup() {
   range.setAttribute("max", "1000");
   range.setAttribute("value", "250");
   button.innerHTML = "<span>Reset</span> Button";
-  button.addEventListener("click", () => clear());
+  button.addEventListener("click", clear);
   range.addEventListener("input", () => {
     repsFrame = range.value;
   });
@@ -43,24 +48,47 @@ function draw() {
 }
 
 function update() {
-  point.assign(fractal(point));
+  point.assign(fractal(point, barnsley));
 
-  function fractal(vector) {
+  function fractal(vector, coefficient) {
     const p = Math.random();
     const newVector = new Vector();
-
-    if (p < 0.01) {
-      newVector.x = 0;
-      newVector.y = vector.y * 0.16;
-    } else if (p < 0.86) {
-      newVector.x = 0.85 * vector.x + 0.04 * vector.y;
-      newVector.y = -0.04 * vector.x + 0.85 * vector.y + 1.6;
-    } else if (p < 0.93) {
-      newVector.x = 0.2 * vector.x - 0.26 * vector.y;
-      newVector.y = 0.23 * vector.x + 0.22 * vector.y + 1.6;
+    if (p < coefficient.f1.p) {
+      newVector.x =
+        coefficient.f1.multiplyMatrix[0] * vector.x +
+        coefficient.f1.multiplyMatrix[1] * vector.y +
+        coefficient.f1.sumMatrix[0];
+      newVector.y =
+        coefficient.f1.multiplyMatrix[2] * vector.x +
+        coefficient.f1.multiplyMatrix[3] * vector.y +
+        coefficient.f1.sumMatrix[1];
+    } else if (p < coefficient.f1.p + coefficient.f2.p) {
+      newVector.x =
+        coefficient.f2.multiplyMatrix[0] * vector.x +
+        coefficient.f2.multiplyMatrix[1] * vector.y +
+        coefficient.f2.sumMatrix[0];
+      newVector.y =
+        coefficient.f2.multiplyMatrix[2] * vector.x +
+        coefficient.f2.multiplyMatrix[3] * vector.y +
+        coefficient.f2.sumMatrix[1];
+    } else if (p < coefficient.f1.p + coefficient.f2.p + coefficient.f3.p) {
+      newVector.x =
+        coefficient.f3.multiplyMatrix[0] * vector.x +
+        coefficient.f3.multiplyMatrix[1] * vector.y +
+        coefficient.f3.sumMatrix[0];
+      newVector.y =
+        coefficient.f3.multiplyMatrix[2] * vector.x +
+        coefficient.f3.multiplyMatrix[3] * vector.y +
+        coefficient.f3.sumMatrix[1];
     } else {
-      newVector.x = -0.15 * vector.x + 0.28 * vector.y;
-      newVector.y = 0.26 * vector.x + 0.24 * vector.y + 0.44;
+      newVector.x =
+        coefficient.f4.multiplyMatrix[0] * vector.x +
+        coefficient.f4.multiplyMatrix[1] * vector.y +
+        coefficient.f4.sumMatrix[0];
+      newVector.y =
+        coefficient.f4.multiplyMatrix[2] * vector.x +
+        coefficient.f4.multiplyMatrix[3] * vector.y +
+        coefficient.f4.sumMatrix[1];
     }
     return newVector;
   }
@@ -77,4 +105,4 @@ setInterval(() => {
     update();
     draw();
   }
-}, getMs(20));
+}, getMs(60));
