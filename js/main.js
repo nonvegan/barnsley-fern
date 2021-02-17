@@ -26,18 +26,17 @@ function setup() {
   optionsDiv.appendChild(rangeLabel);
   optionsDiv.appendChild(range);
   optionsDiv.appendChild(button);
+  
   for (const coefficient of coefficients) {
     const newItem = document.createElement("option");
     newItem.setAttribute("value", coefficient.index);
     newItem.textContent = coefficient.name;
-    newItem.className="lol"
     dropDownList.appendChild(newItem);
   }
   dropDownList.addEventListener("change", (evt) => {
     coefficientsTable = coefficients[evt.target.value];
     clear();
   });
- // dropDownList.className="custom-select";
   optionsDiv.appendChild(listLabel);
   optionsDiv.appendChild(dropDownList);
   range.setAttribute("type", "range");
